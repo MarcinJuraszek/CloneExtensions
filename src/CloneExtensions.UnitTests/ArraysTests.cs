@@ -6,7 +6,7 @@ namespace CloneExtensions.UnitTests
     [TestClass]
     public class ArraysTests
     {
-        private class MyClass()
+        private class MyClass
         {
             public override bool Equals(object obj)
             {
