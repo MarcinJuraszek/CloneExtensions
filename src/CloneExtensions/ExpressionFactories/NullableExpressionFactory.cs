@@ -7,8 +7,8 @@ namespace CloneExtensions.ExpressionFactories
     {
         private Type _structType = typeof(T).GetGenericArguments()[0];
 
-        public NullableExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
-            : base(source, target, flags, initializers, returnLabel)
+        public NullableExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
+            : base(source, target, flags, initializers)
         {
         }
 

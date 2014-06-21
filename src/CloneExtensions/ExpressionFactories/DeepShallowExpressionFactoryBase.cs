@@ -5,8 +5,8 @@ namespace CloneExtensions.ExpressionFactories
 {
     abstract class DeepShallowExpressionFactoryBase<T> : ExpressionFactoryBase<T>
     {
-        public DeepShallowExpressionFactoryBase(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
-            : base(source, target, flags, initializers, returnLabel)
+        public DeepShallowExpressionFactoryBase(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
+            : base(source, target, flags, initializers)
         {
         }
 

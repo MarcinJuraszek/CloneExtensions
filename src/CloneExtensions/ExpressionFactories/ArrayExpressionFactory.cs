@@ -11,8 +11,8 @@ namespace CloneExtensions.ExpressionFactories
         private Expression _arrayLength;
         private Expression _newArray;
 
-        public ArrayExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
-            : base(source, target, flags, initializers, returnLabel)
+        public ArrayExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
+            : base(source, target, flags, initializers)
         {
             _itemType = GetItemType();
             _arrayLength = Expression.Property(Source, "Length");
