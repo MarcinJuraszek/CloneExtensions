@@ -94,4 +94,9 @@ When it comes to performance it's always easier to compare solutions with each o
 Is CloneExtensions the fastest way to clone objects? No, it's not. If you really care about every tick you should write all Clone methods by yourself. That's the fastest way.
 
 Is CloneExtensions faster than other known and popular solutions? It depends on how many instances of the same type you clone. That's because just before first GetClone<T> is performed for the first time Expression Tree has to be generated and cloning method has to be compiled. And to do that CloneExtensions uses Reflection. However, starting from the second time method is used with the same T, it has the same performance as if you'd write the logic by yourself. That's why CloneExtensions is definitely faster then reflection-based solutions and is faster then serialization-based solutions when you clone a lot of instances.
+
+# Internals #
+
 Internals
+
+Read about thrown exceptions, generated expressions and more in [Documentation](EXPRESSION_TREES.md).
