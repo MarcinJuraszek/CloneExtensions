@@ -10,13 +10,6 @@ namespace CloneExtensions
         private Type _type;
         private Expression _typeExpression;
 
-        ParameterExpression _source;
-        ParameterExpression _flags;
-        ParameterExpression _initializers;
-        ParameterExpression _target;
-
-        private LabelTarget _return;
-
         public ExpressionFactory()
         {
             _type = typeof(T);
