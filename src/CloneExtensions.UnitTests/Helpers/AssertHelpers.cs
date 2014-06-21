@@ -5,10 +5,13 @@ namespace CloneExtensions.UnitTests.Helpers
 {
     class AssertHelpers
     {
-        public static void GetCloneAndAssert<T>(Func<T> getInstance, bool assertSame = false)
+        public static void GetCloneAndAssert<T>(Func<T> getInstance, bool assertSame = false, CloningFlags? flags = null)
         {
             var source = getInstance();
-            var target = CloneFactory.GetClone(source);
+            var target =
+                flags.HasValue ?
+                    CloneFactory.GetClone(source, flags.Value) :
+                    CloneFactory.GetClone(source);
 
             if (source == null)
             {
@@ -28,12 +31,15 @@ namespace CloneExtensions.UnitTests.Helpers
             }
         }
 
-        public static void GetArrayCloneAndAssert<T>(Func<T[]> getInstance, bool assertSame = false)
+        public static void GetArrayCloneAndAssert<T>(Func<T[]> getInstance, bool assertSame = false, CloningFlags? flags = null)
         {
             var source = getInstance();
-            var target = CloneFactory.GetClone(source);
+            var target =
+                flags.HasValue ?
+                    CloneFactory.GetClone(source, flags.Value) :
+                    CloneFactory.GetClone(source);
 
-            if(source == null)
+            if (source == null)
             {
                 Assert.IsNull(target);
             }

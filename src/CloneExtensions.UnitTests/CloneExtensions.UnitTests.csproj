@@ -74,7 +74,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ComplexTypeTests.cs" />
     <Compile Include="NullableOfTTests.cs" />
-    <Compile Include="CloningFlagsTests.cs" />
+    <Compile Include="DefaultCloningFlagsTests.cs" />
     <Compile Include="KeyValuePairTests.cs" />
     <Compile Include="TupleTests.cs" />
   </ItemGroup>
