@@ -61,15 +61,6 @@ namespace CloneExtensions.UnitTests
         }
 
         [TestMethod]
-        public void ArrayOfIntCloneTest()
-        {
-            var source = Enumerable.Range(0, 10).ToArray();
-            var target = CloneExtensions.CloneFactory.GetClone(source);
-            Assert.AreNotSame(source, target);
-            Assert.IsFalse(object.ReferenceEquals(source, target));
-        }
-
-        [TestMethod]
         public void DictionaryCloneTest()
         {
             var source = new Dictionary<int, string>() { { 1, "one" }, { 2, "two" } };

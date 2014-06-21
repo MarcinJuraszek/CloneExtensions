@@ -54,6 +54,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ArraysTests.cs" />
     <Compile Include="Base\TestBase.cs" />
     <Compile Include="EntityClasses\AbstractClass.cs" />
     <Compile Include="EntityClasses\ClassWithAttributedProperties.cs" />
