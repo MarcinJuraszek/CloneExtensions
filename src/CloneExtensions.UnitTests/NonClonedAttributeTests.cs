@@ -1,34 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CloneExtensions.UnitTests.EntityClasses;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CloneExtensions.UnitTests
 {
     [TestClass]
     public class NonClonedAttributeTests
     {
-        [TestMethod]
-        public void FieldWithAttributeTest()
+        class ClassWithAttributedMembers
         {
-            var source = new ClassWithAttributedProperties() { FieldWithAttribute = "value", NormalField = "another" };
-            var target = CloneExtensions.CloneFactory.GetClone(source);
-            Assert.AreNotSame(source, target);
-            Assert.AreEqual(source.NormalField, target.NormalField);
-            Assert.AreNotEqual(source.FieldWithAttribute, target.FieldWithAttribute);
+            [NonCloned]
+            public string PropertyWithAttributes { get; set; }
+
+            [NonCloned]
+            public string FieldWithAttribute;
         }
 
         [TestMethod]
-        public void PropertyWithAttributeTest()
+        public void GetClone_FieldWithNotClonedAttribute_FieldNotCloned()
         {
-            var source = new ClassWithAttributedProperties() { PropertyWithAttributes = "value", NormalProperty = "another" };
-            var target = CloneExtensions.CloneFactory.GetClone(source);
+            var source = new ClassWithAttributedMembers() { FieldWithAttribute = "value" };
+            var target = CloneFactory.GetClone(source);
             Assert.AreNotSame(source, target);
-            Assert.AreEqual(source.NormalProperty, target.NormalProperty);
+            Assert.AreNotEqual(source.FieldWithAttribute, target.FieldWithAttribute);
+            Assert.AreEqual(default(string), target.FieldWithAttribute);
+        }
+
+        [TestMethod]
+        public void GetClone_PropertyWithNotClonedAttribute_PropertyNotCloned()
+        {
+            var source = new ClassWithAttributedMembers() { PropertyWithAttributes = "value" };
+            var target = CloneFactory.GetClone(source);
+            Assert.AreNotSame(source, target);
             Assert.AreNotEqual(source.PropertyWithAttributes, target.PropertyWithAttributes);
+            Assert.AreEqual(default(string), target.PropertyWithAttributes);
         }
     }
 }

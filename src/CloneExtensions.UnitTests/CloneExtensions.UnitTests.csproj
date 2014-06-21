@@ -57,7 +57,6 @@
     <Compile Include="ArraysTests.cs" />
     <Compile Include="Base\TestBase.cs" />
     <Compile Include="EntityClasses\AbstractClass.cs" />
-    <Compile Include="EntityClasses\ClassWithAttributedProperties.cs" />
     <Compile Include="EntityClasses\ClassWithInterfaceProperty.cs" />
     <Compile Include="EntityClasses\DerivedClass.cs" />
     <Compile Include="EntityClasses\DerivedDerivedClass.cs" />
