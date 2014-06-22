@@ -5,8 +5,8 @@ namespace CloneExtensions.ExpressionFactories
 {
     class PrimitiveTypeExpressionFactory<T> : ExpressionFactoryBase<T>
     {
-        public PrimitiveTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
-            : base(source, target, flags, initializers, returnLabel)
+        public PrimitiveTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
+            : base(source, target, flags, initializers)
         {
         }
 

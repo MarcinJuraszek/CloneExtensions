@@ -8,8 +8,8 @@ namespace CloneExtensions.ExpressionFactories
     {
         Type[] _genericTypes;
 
-        public TupleExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
-            : base(source, target, flags, initializers, returnLabel)
+        public TupleExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
+            : base(source, target, flags, initializers)
         {
             _genericTypes = typeof(T).GetGenericArguments();
         }

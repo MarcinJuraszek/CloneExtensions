@@ -12,8 +12,8 @@ namespace CloneExtensions.ExpressionFactories
         Type _type;
         Expression _typeExpression;
 
-        public ComplexTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
-            : base(source, target, flags, initializers, returnLabel)
+        public ComplexTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
+            : base(source, target, flags, initializers)
         {
             _type = typeof(T);
             _typeExpression = Expression.Constant(_type, typeof(Type));   

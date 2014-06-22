@@ -22,7 +22,7 @@ namespace CloneExtensions
 
         internal Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, T> GetCloneFunc()
         {
-            return CloneExpression == null ? null : CloneExpression.Compile();
+            return CloneExpression.Compile();
         }
 
         public void Initialize()
@@ -75,15 +75,15 @@ namespace CloneExtensions
         {
             if (_type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(_type))
             {
-                return new PrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, returnLabel);
+                return new PrimitiveTypeExpressionFactory<T>(source, target, flags, initializers);
             }
             else if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return new NullableExpressionFactory<T>(source, target, flags, initializers, returnLabel);
+                return new NullableExpressionFactory<T>(source, target, flags, initializers);
             }
             else if (_type.IsArray)
             {
-                return new ArrayExpressionFactory<T>(source, target, flags, initializers, returnLabel);
+                return new ArrayExpressionFactory<T>(source, target, flags, initializers);
             }
             else if (_type.IsGenericType &&
                 (_type.GetGenericTypeDefinition() == typeof(Tuple<>)
@@ -95,14 +95,14 @@ namespace CloneExtensions
                 || _type.GetGenericTypeDefinition() == typeof(Tuple<,,,,,,>)
                 || _type.GetGenericTypeDefinition() == typeof(Tuple<,,,,,,,>)))
             {
-                return new TupleExpressionFactory<T>(source, target, flags, initializers, returnLabel);
+                return new TupleExpressionFactory<T>(source, target, flags, initializers);
             }
             else if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
             {
-                return new KeyValuePairExpressionFactory<T>(source, target, flags, initializers, returnLabel);
+                return new KeyValuePairExpressionFactory<T>(source, target, flags, initializers);
             }
 
-            return new ComplexTypeExpressionFactory<T>(source, target, flags, initializers, returnLabel);
+            return new ComplexTypeExpressionFactory<T>(source, target, flags, initializers);
         }
     }
 }

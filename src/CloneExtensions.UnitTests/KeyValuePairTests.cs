@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using CloneExtensions.UnitTests.EntityClasses;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CloneExtensions.UnitTests
@@ -9,43 +8,63 @@ namespace CloneExtensions.UnitTests
     public class KeyValuePairTests
     {
         [TestMethod]
-        public void KeyValuePairClone_InstanceIsCloned()
+        public void GetClone_KeyValuePairOfIntAndString_AreNotSame()
         {
             var source = new KeyValuePair<int, string>(10, "test");
-            var target = CloneExtensions.CloneFactory.GetClone(source);
-            Assert.AreEqual(source, target);
+            var target = CloneFactory.GetClone(source);
+            Assert.AreNotSame(source, target);
         }
 
         [TestMethod]
-        public void KeyValuePairClone_ValueTypeKey_KeyIsCloned()
+        public void GetClone_KeyValuePairKeyIsCloned()
         {
             var source = new KeyValuePair<int, string>(10, "test");
-            var target = CloneExtensions.CloneFactory.GetClone(source);
+            var target = CloneFactory.GetClone(source);
             Assert.AreEqual(source.Value, target.Value);
         }
 
         [TestMethod]
-        public void KeyValuePairClone_ValueTypeValue_ValueIsCloned()
+        public void GetClone_KeyValuePair_ValueIsCloned()
         {
             var source = new KeyValuePair<int, string>(10, "test");
-            var target = CloneExtensions.CloneFactory.GetClone(source);
+            var target = CloneFactory.GetClone(source);
             Assert.AreEqual(source.Key, target.Key);
         }
 
         [TestMethod]
-        public void KeyValuePairClone_RefTypeKey_KeysAreNotTheSame()
+        public void GetClone_KeyValuePairRefTypeKey_KeysAreNotTheSame()
         {
-            var source = new KeyValuePair<SimpleClass, int>(new SimpleClass(), 10);
-            var target = CloneExtensions.CloneFactory.GetClone(source);
+            var source = new KeyValuePair<MyClass, int>(new MyClass(), 10);
+            var target = CloneFactory.GetClone(source);
             Assert.AreNotSame(source.Value, target.Value);
         }
 
         [TestMethod]
-        public void KeyValuePairClone_RefTypeValue_ValueAreNotTheSame()
+        public void GetClone_KeyValuePairRefTypeValue_ValueAreNotTheSame()
         {
-            var source = new KeyValuePair<int, SimpleClass>(10, new SimpleClass());
-            var target = CloneExtensions.CloneFactory.GetClone(source);
+            var source = new KeyValuePair<int, MyClass>(10, new MyClass());
+            var target = CloneFactory.GetClone(source);
             Assert.AreNotSame(source.Value, target.Value);
+        }
+
+        [TestMethod]
+        public void GetClone_KeyValuePairRefTypeKeyShallowClone_KeysAreNotTheSame()
+        {
+            var source = new KeyValuePair<MyClass, int>(new MyClass(), 10);
+            var target = CloneFactory.GetClone(source, CloningFlags.Shallow);
+            Assert.AreSame(source.Key, target.Key);
+        }
+
+        [TestMethod]
+        public void GetClone_KeyValuePairRefTypeValueShallowClone_ValueAreNotTheSame()
+        {
+            var source = new KeyValuePair<int, MyClass>(10, new MyClass());
+            var target = CloneFactory.GetClone(source, CloningFlags.Shallow);
+            Assert.AreSame(source.Value, target.Value);
+        }
+
+        private class MyClass
+        {
         }
     }
 }
