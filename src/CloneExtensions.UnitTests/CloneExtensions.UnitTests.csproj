@@ -56,16 +56,6 @@
   <ItemGroup>
     <Compile Include="ArraysTests.cs" />
     <Compile Include="Base\TestBase.cs" />
-    <Compile Include="EntityClasses\AbstractClass.cs" />
-    <Compile Include="EntityClasses\ClassWithInterfaceProperty.cs" />
-    <Compile Include="EntityClasses\DerivedClass.cs" />
-    <Compile Include="EntityClasses\DerivedDerivedClass.cs" />
-    <Compile Include="EntityClasses\GenericClass.cs" />
-    <Compile Include="EntityClasses\IInterface.cs" />
-    <Compile Include="EntityClasses\SelfReferencedClass.cs" />
-    <Compile Include="EntityClasses\SimpleClass.cs" />
-    <Compile Include="EntityClasses\SimpleClassWithCollection.cs" />
-    <Compile Include="EntityClasses\SimpleStruct.cs" />
     <Compile Include="CollectionTests.cs" />
     <Compile Include="Helpers\AssertHelpers.cs" />
     <Compile Include="NonClonedAttributeTests.cs" />

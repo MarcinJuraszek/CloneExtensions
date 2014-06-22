@@ -8,7 +8,7 @@ namespace CloneExtensions.UnitTests.Base
         [TestCleanup]
         public void TestCleanup()
         {
-            CloneExtensions.CloneFactory.CustomInitializers.Clear();
+            CloneFactory.CustomInitializers.Clear();
         }
     }
 }

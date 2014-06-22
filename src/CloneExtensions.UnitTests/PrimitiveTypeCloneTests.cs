@@ -48,5 +48,13 @@ namespace CloneExtensions.UnitTests
         {
             AssertHelpers.GetCloneAndAssert(() => (string)null, assertSame: true);
         }
+
+        [TestMethod]
+        public void GetClone_FuncDelegate_Cloned()
+        {
+            Func<int, int> source = (s) => s + 10;
+            var target = source.GetClone();
+            Assert.AreSame(source, target);
+        }
     }
 }

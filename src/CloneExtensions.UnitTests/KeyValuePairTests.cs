@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using CloneExtensions.UnitTests.EntityClasses;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CloneExtensions.UnitTests
@@ -8,10 +7,6 @@ namespace CloneExtensions.UnitTests
     [TestClass]
     public class KeyValuePairTests
     {
-        private class MyClass
-        {
-        }
-
         [TestMethod]
         public void GetClone_KeyValuePairOfIntAndString_AreNotSame()
         {
@@ -39,7 +34,7 @@ namespace CloneExtensions.UnitTests
         [TestMethod]
         public void GetClone_KeyValuePairRefTypeKey_KeysAreNotTheSame()
         {
-            var source = new KeyValuePair<SimpleClass, int>(new SimpleClass(), 10);
+            var source = new KeyValuePair<MyClass, int>(new MyClass(), 10);
             var target = CloneFactory.GetClone(source);
             Assert.AreNotSame(source.Value, target.Value);
         }
@@ -47,7 +42,7 @@ namespace CloneExtensions.UnitTests
         [TestMethod]
         public void GetClone_KeyValuePairRefTypeValue_ValueAreNotTheSame()
         {
-            var source = new KeyValuePair<int, SimpleClass>(10, new SimpleClass());
+            var source = new KeyValuePair<int, MyClass>(10, new MyClass());
             var target = CloneFactory.GetClone(source);
             Assert.AreNotSame(source.Value, target.Value);
         }
@@ -66,6 +61,10 @@ namespace CloneExtensions.UnitTests
             var source = new KeyValuePair<int, MyClass>(10, new MyClass());
             var target = CloneFactory.GetClone(source, CloningFlags.Shallow);
             Assert.AreSame(source.Value, target.Value);
+        }
+
+        private class MyClass
+        {
         }
     }
 }
