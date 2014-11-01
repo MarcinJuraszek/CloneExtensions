@@ -7,8 +7,8 @@ namespace CloneExtensions.ExpressionFactories
     {
         private Type _structType = typeof(T).GetGenericArguments()[0];
 
-        public NullableExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
-            : base(source, target, flags, initializers)
+        public NullableExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
+            : base(source, target, flags, initializers, clonedObjects)
         {
         }
 
@@ -21,6 +21,14 @@ namespace CloneExtensions.ExpressionFactories
         }
 
         public override bool AddNullCheck
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool VerifyIfAlreadyClonedByReference
         {
             get
             {

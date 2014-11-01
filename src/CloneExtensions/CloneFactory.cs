@@ -49,7 +49,12 @@ namespace CloneExtensions
             if (initializers == null)
                 throw new ArgumentNullException();
 
-            return CloneManager<T>.Clone(source, flags, initializers);
+            return GetClone(source, flags, initializers, new Dictionary<object, object>());
+        }
+
+        internal static T GetClone<T>(this T source, CloningFlags flags, IDictionary<Type, Func<object, object>> initializers, Dictionary<object, object> clonedObjects)
+        {
+            return CloneManager<T>.Clone(source, flags, initializers, clonedObjects);
         }
     }
 }

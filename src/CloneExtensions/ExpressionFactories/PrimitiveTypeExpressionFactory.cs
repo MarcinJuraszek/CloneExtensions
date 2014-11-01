@@ -5,8 +5,8 @@ namespace CloneExtensions.ExpressionFactories
 {
     class PrimitiveTypeExpressionFactory<T> : ExpressionFactoryBase<T>
     {
-        public PrimitiveTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
-            : base(source, target, flags, initializers)
+        public PrimitiveTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
+            : base(source, target, flags, initializers, clonedObjects)
         {
         }
 
@@ -19,6 +19,14 @@ namespace CloneExtensions.ExpressionFactories
         }
 
         public override bool AddNullCheck
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool VerifyIfAlreadyClonedByReference
         {
             get
             {

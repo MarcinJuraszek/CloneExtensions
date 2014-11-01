@@ -11,8 +11,8 @@ namespace CloneExtensions.ExpressionFactories
         private Type _keyType;
         private Type _valueType;
 
-        public KeyValuePairExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
-            : base(source, target, flags, initializers)
+        public KeyValuePairExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
+            : base(source, target, flags, initializers, clonedObjects)
         {
             var type = typeof(T);
             _constructor = type.GetConstructors().FirstOrDefault(c => c.GetParameters().Length == 2);
@@ -21,6 +21,14 @@ namespace CloneExtensions.ExpressionFactories
         }
 
         public override bool AddNullCheck
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool VerifyIfAlreadyClonedByReference
         {
             get
             {
