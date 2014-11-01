@@ -11,14 +11,22 @@ namespace CloneExtensions.ExpressionFactories
         private Expression _arrayLength;
         private Expression _newArray;
 
-        public ArrayExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
-            : base(source, target, flags, initializers)
+        public ArrayExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
+            : base(source, target, flags, initializers, clonedObjects)
         {
             _itemType = GetItemType();
             _arrayLength = Expression.Property(Source, "Length");
             _newArray = Expression.NewArrayBounds(_itemType, _arrayLength);
         }
         public override bool AddNullCheck
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override bool VerifyIfAlreadyClonedByReference
         {
             get
             {
@@ -34,6 +42,7 @@ namespace CloneExtensions.ExpressionFactories
             return Expression.Block(
                 new[] { counter },
                 Expression.Assign(Target, _newArray),
+                GetAddToClonedObjectsExpression(),
                 Expression.Assign(counter, Expression.Constant(0)),
                 Expression.Loop(
                     Expression.IfThenElse(

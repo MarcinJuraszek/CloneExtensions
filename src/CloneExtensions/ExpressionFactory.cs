@@ -7,34 +7,36 @@ namespace CloneExtensions
 {
     class ExpressionFactory<T>
     {
-        private Type _type;
-        private Expression _typeExpression;
+        private static Type _type = typeof(T);
+        private static Expression _typeExpression = Expression.Constant(_type, typeof(Type));
+        private static Expression nullConstant = null;
 
-        public ExpressionFactory()
+        private static ParameterExpression source = Expression.Parameter(_type, "source");
+        private static ParameterExpression flags = Expression.Parameter(typeof(CloningFlags), "flags");
+        private static ParameterExpression initializers = Expression.Parameter(typeof(IDictionary<Type, Func<object, object>>), "initializers");
+        private static ParameterExpression clonedObjects = Expression.Parameter(typeof(Dictionary<object, object>), "clonedObjects");
+        private static ParameterExpression target = Expression.Variable(_type, "target");
+
+        static ExpressionFactory()
         {
-            _type = typeof(T);
-            _typeExpression = Expression.Constant(_type, typeof(Type));
-
             Initialize();
         }
 
-        public Expression<Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, T>> CloneExpression { get; private set; }
+        public static Expression<Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, Dictionary<object, object>, T>> CloneExpression { get; private set; }
 
-        internal Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, T> GetCloneFunc()
+        internal Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, Dictionary<object, object>, T> GetCloneFunc()
         {
             return CloneExpression.Compile();
         }
 
-        public void Initialize()
+        public static void Initialize()
         {
-            var source = Expression.Parameter(_type, "source");
-            var flags = Expression.Parameter(typeof(CloningFlags), "flags");
-            var initializers = Expression.Parameter(typeof(IDictionary<Type, Func<object, object>>), "initializers");
-            var target = Expression.Variable(_type, "target");
-
             var returnLabel = Expression.Label(_type);
 
-            var expressionFactory = GetExpressionFactory(source, target, flags, initializers, returnLabel);
+            var expressionFactory = GetExpressionFactory(source, target, flags, initializers, clonedObjects, returnLabel);
+
+            if(expressionFactory.AddNullCheck || expressionFactory.VerifyIfAlreadyClonedByReference)
+                nullConstant = Expression.Constant(null, _type);
 
             Expression cloneLogic;
             if (expressionFactory.IsDeepCloneDifferentThanShallow)
@@ -42,7 +44,7 @@ namespace CloneExtensions
                 cloneLogic =
                     Expression.IfThenElse(
                         Expression.Not(Helpers.GetCloningFlagsExpression(CloningFlags.Shallow, flags)),
-                        expressionFactory.GetDeepCloneExpression(),
+                        GetFromClonedObjectsOrCallDeepClone(expressionFactory),
                         expressionFactory.GetShallowCloneExpression()
                     );
             }
@@ -54,7 +56,6 @@ namespace CloneExtensions
             Expression cloneExpression = cloneLogic;
             if (expressionFactory.AddNullCheck)
             {
-                var nullConstant = Expression.Constant(null, _type);
                 cloneExpression =
                     Expression.IfThenElse(
                         Expression.Equal(source, nullConstant),
@@ -63,27 +64,51 @@ namespace CloneExtensions
                         );
             }
 
-            var block = Expression.Block(new[] { target }, new Expression[] { cloneExpression, Expression.Label(returnLabel, target) });
+            var block = Expression.Block(new[] { target },
+                new Expression[] { cloneExpression, Expression.Label(returnLabel, target) });
 
             CloneExpression =
-                Expression.Lambda<Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, T>>(
+                Expression.Lambda<Func<T, CloningFlags, IDictionary<Type, Func<object, object>>, Dictionary<object, object>, T>>(
                     block,
-                    new[] { source, flags, initializers });
+                    new[] { source, flags, initializers, clonedObjects });
         }
 
-        private IExpressionFactory<T> GetExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, LabelTarget returnLabel)
+        private static Expression GetFromClonedObjectsOrCallDeepClone(IExpressionFactory<T> expressionFactory)
+        {
+            if (expressionFactory.VerifyIfAlreadyClonedByReference)
+            {
+                var getFromCollectionCall = Expression.Call(typeof(Helpers), "GetFromClonedObjects", new[] { _type }, new Expression[] { clonedObjects, source });
+                var fromClonedObjects = Expression.Variable(_type, "fromClonedObjects");
+                var assignFromCall = Expression.Assign(fromClonedObjects, getFromCollectionCall);
+
+                var ifElse =
+                    Expression.IfThenElse(
+                        Expression.NotEqual(fromClonedObjects, nullConstant),
+                            Expression.Assign(target, fromClonedObjects),
+                            expressionFactory.GetDeepCloneExpression());
+
+                return Expression.Block(new[] { fromClonedObjects },
+                    assignFromCall, ifElse);
+            }
+            else
+            {
+                return expressionFactory.GetDeepCloneExpression();
+            }
+        }
+
+        private static IExpressionFactory<T> GetExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects, LabelTarget returnLabel)
         {
             if (_type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(_type))
             {
-                return new PrimitiveTypeExpressionFactory<T>(source, target, flags, initializers);
+                return new PrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
             else if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return new NullableExpressionFactory<T>(source, target, flags, initializers);
+                return new NullableExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
             else if (_type.IsArray)
             {
-                return new ArrayExpressionFactory<T>(source, target, flags, initializers);
+                return new ArrayExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
             else if (_type.IsGenericType &&
                 (_type.GetGenericTypeDefinition() == typeof(Tuple<>)
@@ -95,14 +120,14 @@ namespace CloneExtensions
                 || _type.GetGenericTypeDefinition() == typeof(Tuple<,,,,,,>)
                 || _type.GetGenericTypeDefinition() == typeof(Tuple<,,,,,,,>)))
             {
-                return new TupleExpressionFactory<T>(source, target, flags, initializers);
+                return new TupleExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
             else if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
             {
-                return new KeyValuePairExpressionFactory<T>(source, target, flags, initializers);
+                return new KeyValuePairExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
 
-            return new ComplexTypeExpressionFactory<T>(source, target, flags, initializers);
+            return new ComplexTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
         }
     }
 }

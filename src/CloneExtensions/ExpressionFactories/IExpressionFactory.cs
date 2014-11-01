@@ -8,6 +8,8 @@ namespace CloneExtensions.ExpressionFactories
 
         bool AddNullCheck { get; }
 
+        bool VerifyIfAlreadyClonedByReference { get; }
+
         Expression GetShallowCloneExpression();
 
         Expression GetDeepCloneExpression();

@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
+
 namespace CloneExtensions
 {
-    static class Helpers
+    static internal class Helpers
     {
         public static Expression GetCloningFlagsExpression(CloningFlags flags, ParameterExpression parameter)
         {
@@ -17,9 +20,9 @@ namespace CloneExtensions
             );
         }
 
-        public static Expression GetCloneMethodCall(Type type, Expression source, Expression flags, Expression initializers)
+        public static Expression GetCloneMethodCall(Type type, Expression source, Expression flags, Expression initializers, Expression clonedObjects)
         {
-            return Expression.Call(typeof(CloneFactory), "GetClone", new[] { type }, source, flags, initializers);
+            return Expression.Call(typeof(CloneFactory), "GetClone", new[] { type }, source, flags, initializers, clonedObjects);
         }
 
         public static Expression GetThrowInvalidOperationExceptionExpression(Type type)
@@ -32,6 +35,12 @@ namespace CloneExtensions
                     Expression.Constant(message, typeof(string))
                 )
             );
+        }
+
+        public static T GetFromClonedObjects<T>(Dictionary<object, object> clonedObjects, T source)
+        {
+            var key = clonedObjects.Keys.FirstOrDefault(k => ReferenceEquals(k, source));
+            return key != null ? (T)clonedObjects[key] : default(T);
         }
     }
 }

@@ -74,6 +74,20 @@ namespace CloneExtensions.UnitTests
             Assert.AreEqual(source.InterfaceProperty, target.InterfaceProperty);
         }
 
+        [TestMethod]
+        public void GetClone_CircularDependency_ItemsClonedCorrectly()
+        {
+            CircularReference1 one = new CircularReference1();
+            CircularReference2 two = new CircularReference2();
+            one.First = two;
+            one.Second = two;
+            two.Other = one;
+
+            var target = CloneFactory.GetClone(one);
+
+            Assert.AreSame(target.First, target.Second, "Are the same");
+        }
+
         struct SimpleStruct
         {
             public int _field;
@@ -106,6 +120,18 @@ namespace CloneExtensions.UnitTests
             public override int AbstractProperty { get; set; }
 
             public int InterfaceProperty { get; set; }
+        }
+        
+        class CircularReference1
+        {
+            public CircularReference2 First { get;set; }
+
+            public CircularReference2 Second { get; set; }
+        }
+
+        class CircularReference2
+        {
+            public CircularReference1 Other { get;set; }
         }
     }
 }

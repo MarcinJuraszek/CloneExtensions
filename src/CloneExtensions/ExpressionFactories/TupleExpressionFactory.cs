@@ -8,13 +8,21 @@ namespace CloneExtensions.ExpressionFactories
     {
         Type[] _genericTypes;
 
-        public TupleExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
-            : base(source, target, flags, initializers)
+        public TupleExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
+            : base(source, target, flags, initializers, clonedObjects)
         {
             _genericTypes = typeof(T).GetGenericArguments();
         }
 
         public override bool AddNullCheck
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public override bool VerifyIfAlreadyClonedByReference
         {
             get
             {

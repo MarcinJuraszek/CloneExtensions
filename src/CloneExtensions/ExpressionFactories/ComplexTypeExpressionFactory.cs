@@ -12,14 +12,22 @@ namespace CloneExtensions.ExpressionFactories
         Type _type;
         Expression _typeExpression;
 
-        public ComplexTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers)
-            : base(source, target, flags, initializers)
+        public ComplexTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
+            : base(source, target, flags, initializers, clonedObjects)
         {
             _type = typeof(T);
             _typeExpression = Expression.Constant(_type, typeof(Type));   
         }
 
         public override bool AddNullCheck
+        {
+            get
+            {
+                return !_type.IsValueType;
+            }
+        }
+
+        public override bool VerifyIfAlreadyClonedByReference
         {
             get
             {
@@ -43,7 +51,7 @@ namespace CloneExtensions.ExpressionFactories
 
             var collectionItems = GetCollectionItemsExpression(getItemCloneExpression);
 
-            return Expression.Block(initialization, fields, properties, collectionItems);
+            return Expression.Block(initialization, GetAddToClonedObjectsExpression(), fields, properties, collectionItems);
         }
 
         private Expression GetInitializationExpression()
