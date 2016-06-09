@@ -97,6 +97,4 @@ Is CloneExtensions faster than other known and popular solutions? It depends on 
 
 # Internals #
 
-Internals
-
 Read about thrown exceptions, generated expressions and more in [Documentation](EXPRESSION_TREES.md).
