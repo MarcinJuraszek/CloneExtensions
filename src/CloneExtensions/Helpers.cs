@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
+using System.Reflection;
 
 namespace CloneExtensions
 {
@@ -31,7 +32,7 @@ namespace CloneExtensions
 
             return Expression.Throw(
                 Expression.New(
-                    typeof(InvalidOperationException).GetConstructor(new[] { typeof(string) }),
+                    typeof(InvalidOperationException).GetTypeInfo().GetConstructor(new[] { typeof(string) }),
                     Expression.Constant(message, typeof(string))
                 )
             );

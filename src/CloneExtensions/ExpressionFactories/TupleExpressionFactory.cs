@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace CloneExtensions.ExpressionFactories
 {
@@ -11,7 +13,7 @@ namespace CloneExtensions.ExpressionFactories
         public TupleExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
             : base(source, target, flags, initializers, clonedObjects)
         {
-            _genericTypes = typeof(T).GetGenericArguments();
+            _genericTypes = typeof(T).GetTypeInfo().GetGenericArguments();
         }
 
         public override bool AddNullCheck
@@ -53,7 +55,7 @@ namespace CloneExtensions.ExpressionFactories
                                                 Source,
                                                 "Rest"));
 
-            var constructor = typeof(T).GetConstructors()[0];
+            var constructor = typeof(T).GetTypeInfo().GetConstructors()[0];
 
             return
                 Expression.Assign(

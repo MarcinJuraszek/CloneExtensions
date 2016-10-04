@@ -15,9 +15,9 @@ namespace CloneExtensions.ExpressionFactories
             : base(source, target, flags, initializers, clonedObjects)
         {
             var type = typeof(T);
-            _constructor = type.GetConstructors().FirstOrDefault(c => c.GetParameters().Length == 2);
-            _keyType = type.GetGenericArguments()[0];
-            _valueType = type.GetGenericArguments()[1];
+            _constructor = type.GetTypeInfo().GetConstructors().FirstOrDefault(c => c.GetParameters().Length == 2);
+            _keyType = type.GetTypeInfo().GetGenericArguments()[0];
+            _valueType = type.GetTypeInfo().GetGenericArguments()[1];
         }
 
         public override bool AddNullCheck
