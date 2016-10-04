@@ -35,11 +35,10 @@ namespace CloneExtensions.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void GetClone_AbstractClassInitializerNotSpecified_InvalidOperationExceptionThrown()
         {
             var source = (AbstractClass)new DerivedClass() { AbstractProperty = 10 };
-            var target = CloneFactory.GetClone(source);
+            Assert.ThrowsException<InvalidOperationException>(() => CloneFactory.GetClone(source));
         }
 
         [TestMethod]
@@ -54,11 +53,10 @@ namespace CloneExtensions.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void GetClone_InterfaceInitializerNotSpecified_InvalidOperationExceptionThrown()
         {
             IInterface source = new DerivedClass() { InterfaceProperty = 10 };
-            var target = CloneFactory.GetClone(source);
+            Assert.ThrowsException<InvalidOperationException>(() => CloneFactory.GetClone(source));
         }
 
         [TestMethod]

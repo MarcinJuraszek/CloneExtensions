@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 namespace CloneExtensions
 {
@@ -7,7 +8,7 @@ namespace CloneExtensions
     {
         public static bool IsPrimitiveOrKnownImmutable(this Type type)
         {
-            return type.IsPrimitive || CloneFactory.KnownImmutableTypes.Contains(type);
+            return type.GetTypeInfo().IsPrimitive || CloneFactory.KnownImmutableTypes.Contains(type);
         }
     }
 }

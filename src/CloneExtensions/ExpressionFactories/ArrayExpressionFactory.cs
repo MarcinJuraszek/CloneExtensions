@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace CloneExtensions.ExpressionFactories
 {
@@ -63,9 +64,9 @@ namespace CloneExtensions.ExpressionFactories
 
         private static Type GetItemType()
         {
-            return typeof(T).GetInterfaces()
-                            .First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
-                            .GetGenericArguments()
+            return typeof(T).GetTypeInfo().GetInterfaces()
+                            .First(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                            .GetTypeInfo().GetGenericArguments()
                             .First();
         }
     }

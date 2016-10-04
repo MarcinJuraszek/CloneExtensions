@@ -23,7 +23,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return !_type.IsValueType;
+                return !_type.GetTypeInfo().IsValueType;
             }
         }
 
@@ -31,7 +31,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return !_type.IsValueType;
+                return !_type.GetTypeInfo().IsValueType;
             }
         }
 
@@ -65,24 +65,24 @@ namespace CloneExtensions.ExpressionFactories
             var initializerCall = Expression.Convert(funcInvokeCall, _type);
 
             // parameterless constructor
-            var constructor = _type.GetConstructor(new Type[0]);
+            var constructor = _type.GetTypeInfo().GetConstructor(new Type[0]);
 
             return Expression.IfThenElse(
                 containsKeyCall,
                 Expression.Assign(Target, initializerCall),
-                (_type.IsAbstract || _type.IsInterface || (!_type.IsValueType && constructor == null)) ?
+                (_type.GetTypeInfo().IsAbstract || _type.GetTypeInfo().IsInterface || (!_type.GetTypeInfo().IsValueType && constructor == null)) ?
                     Helpers.GetThrowInvalidOperationExceptionExpression(_type) :
                     Expression.Assign(
                         Target,
-                        _type.IsValueType ? (Expression)Source : Expression.New(_type)
+                        _type.GetTypeInfo().IsValueType ? (Expression)Source : Expression.New(_type)
                     )
             );
         }
 
         private Expression GetFieldsCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            var fields = from f in _type.GetFields(BindingFlags.Public | BindingFlags.Instance)
-                         where !f.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
+            var fields = from f in _type.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance)
+                         where f.CustomAttributes.Any(x => x.AttributeType == typeof(NonClonedAttribute)) == false
                          where !f.IsInitOnly
                          select new Member(f, f.FieldType);
 
@@ -92,10 +92,10 @@ namespace CloneExtensions.ExpressionFactories
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
             // get all public properties with public setter and getter, which are not indexed properties
-            var properties = from p in _type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                              let setMethod = p.GetSetMethod(false)
                              let getMethod = p.GetGetMethod(false)
-                             where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
+                             where p.CustomAttributes.Any(x => x.AttributeType == typeof(NonClonedAttribute)) == false
                              where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
                              select new Member(p, p.PropertyType);
 
@@ -117,8 +117,8 @@ namespace CloneExtensions.ExpressionFactories
 
         private Expression GetCollectionItemsExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            var collectionType = _type.GetInterfaces()
-                                      .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
+            var collectionType = _type.GetTypeInfo().GetInterfaces()
+                                      .FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
             if (collectionType == null)
                 return Expression.Empty();
 
@@ -130,14 +130,14 @@ namespace CloneExtensions.ExpressionFactories
         private Expression GetForeachAddExpression(Type collectionType)
         {
             var collection = Expression.Variable(collectionType);
-            var itemType = collectionType.GetGenericArguments().First();
+            var itemType = collectionType.GetTypeInfo().GetGenericArguments().First();
             var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
             var enumeratorType = typeof(IEnumerator<>).MakeGenericType(itemType);
             var enumerator = Expression.Variable(enumeratorType);
             var getEnumeratorCall = Expression.Call(Expression.Convert(Source, enumerableType), "GetEnumerator", null);
             var assignToEnumerator = Expression.Assign(enumerator, Expression.Convert(getEnumeratorCall, enumeratorType));
             var assignToCollection = Expression.Assign(collection, Expression.Convert(Target, collectionType));
-            var moveNextCall = Expression.Call(enumerator, typeof(IEnumerator).GetMethod("MoveNext"));
+            var moveNextCall = Expression.Call(enumerator, typeof(IEnumerator).GetTypeInfo().GetMethod("MoveNext"));
             var currentProperty = Expression.Property(enumerator, "Current");
             var breakLabel = Expression.Label();
 

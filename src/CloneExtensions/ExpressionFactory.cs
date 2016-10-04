@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace CloneExtensions
 {
@@ -98,11 +99,11 @@ namespace CloneExtensions
 
         private static IExpressionFactory<T> GetExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects, LabelTarget returnLabel)
         {
-            if (_type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(_type))
+            if (_type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).GetTypeInfo().IsAssignableFrom(_type))
             {
                 return new PrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
-            else if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            else if (_type.GetTypeInfo().IsGenericType && _type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 return new NullableExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
@@ -110,7 +111,7 @@ namespace CloneExtensions
             {
                 return new ArrayExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
-            else if (_type.IsGenericType &&
+            else if (_type.GetTypeInfo().IsGenericType &&
                 (_type.GetGenericTypeDefinition() == typeof(Tuple<>)
                 || _type.GetGenericTypeDefinition() == typeof(Tuple<,>)
                 || _type.GetGenericTypeDefinition() == typeof(Tuple<,,>)
@@ -122,7 +123,7 @@ namespace CloneExtensions
             {
                 return new TupleExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
-            else if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+            else if (_type.GetTypeInfo().IsGenericType && _type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
             {
                 return new KeyValuePairExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
