@@ -23,7 +23,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return !_type.IsValueType;
+                return !_type.IsValueType();
             }
         }
 
@@ -31,7 +31,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return !_type.IsValueType;
+                return !_type.IsValueType();
             }
         }
 
@@ -70,11 +70,11 @@ namespace CloneExtensions.ExpressionFactories
             return Expression.IfThenElse(
                 containsKeyCall,
                 Expression.Assign(Target, initializerCall),
-                (_type.IsAbstract || _type.IsInterface || (!_type.IsValueType && constructor == null)) ?
+                (_type.IsAbstract() || _type.IsInterface() || (!_type.IsValueType() && constructor == null)) ?
                     Helpers.GetThrowInvalidOperationExceptionExpression(_type) :
                     Expression.Assign(
                         Target,
-                        _type.IsValueType ? (Expression)Source : Expression.New(_type)
+                        _type.IsValueType() ? (Expression)Source : Expression.New(_type)
                     )
             );
         }
@@ -118,7 +118,7 @@ namespace CloneExtensions.ExpressionFactories
         private Expression GetCollectionItemsExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
             var collectionType = _type.GetInterfaces()
-                                      .FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
+                                      .FirstOrDefault(x => x.IsGenericType() && x.GetGenericTypeDefinition() == typeof(ICollection<>));
             if (collectionType == null)
                 return Expression.Empty();
 

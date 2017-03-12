@@ -64,7 +64,7 @@ namespace CloneExtensions.ExpressionFactories
         private static Type GetItemType()
         {
             return typeof(T).GetInterfaces()
-                            .First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                            .First(x => x.IsGenericType() && x.GetGenericTypeDefinition() == typeof(ICollection<>))
                             .GetGenericArguments()
                             .First();
         }
