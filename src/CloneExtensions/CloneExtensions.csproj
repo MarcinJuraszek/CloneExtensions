@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>CloneExtensions</RootNamespace>
     <AssemblyName>CloneExtensions</AssemblyName>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net4;net45;net46;netcoreapp1.1</TargetFrameworks>
     <Version>1.3.0</Version>
   </PropertyGroup>
 </Project>

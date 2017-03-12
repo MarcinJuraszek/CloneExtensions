@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>CloneExtensions.UnitTests</RootNamespace>
     <AssemblyName>CloneExtensions.UnitTests</AssemblyName>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net45;net46;netcoreapp1.1</TargetFrameworks>
     <Version>1.3.0</Version>
   </PropertyGroup>
   <ItemGroup>
