@@ -8,7 +8,7 @@ branches:
   only:
   - master
 artifacts:
-  - path: 
+  - path: '**\Release\**\*.nupkg'
 nuget:  
   disable_publish_on_pr: true
 image: Visual Studio 2017
