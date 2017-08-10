@@ -1,10 +1,11 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloneExtensions", "src\CloneExtensions\CloneExtensions.csproj", "{87214314-753C-4DA0-B244-1C7B25354AA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloneExtensions", "src\CloneExtensions\CloneExtensions.csproj", "{87214314-753C-4DA0-B244-1C7B25354AA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloneExtensions.UnitTests", "src\CloneExtensions.UnitTests\CloneExtensions.UnitTests.csproj", "{FFC4A5C4-46EE-4D9D-A94B-8F365F7971D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloneExtensions.UnitTests", "src\CloneExtensions.UnitTests\CloneExtensions.UnitTests.csproj", "{FFC4A5C4-46EE-4D9D-A94B-8F365F7971D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

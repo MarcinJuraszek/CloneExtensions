@@ -2,13 +2,19 @@
   <PropertyGroup>
     <RootNamespace>CloneExtensions.UnitTests</RootNamespace>
     <AssemblyName>CloneExtensions.UnitTests</AssemblyName>
-    <TargetFrameworks>net45;net46;netcoreapp1.1</TargetFrameworks>
-    <Version>1.3.0</Version>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+    <Version>1.3.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CloneExtensions\CloneExtensions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestFramework" Version="1.1.13" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.13" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
 </Project>
