@@ -81,7 +81,7 @@ namespace CloneExtensions.ExpressionFactories
 
         private Expression GetFieldsCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            var fields = from f in _type.GetFields(BindingFlags.Public | BindingFlags.Instance)
+            var fields = from f in _type.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance)
                          where !f.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
                          where !f.IsInitOnly
                          select new Member(f, f.FieldType);
@@ -92,7 +92,7 @@ namespace CloneExtensions.ExpressionFactories
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
             // get all public properties with public setter and getter, which are not indexed properties
-            var properties = from p in _type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                              let setMethod = p.GetSetMethod(false)
                              let getMethod = p.GetGetMethod(false)
                              where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
@@ -137,7 +137,7 @@ namespace CloneExtensions.ExpressionFactories
             var getEnumeratorCall = Expression.Call(Expression.Convert(Source, enumerableType), "GetEnumerator", null);
             var assignToEnumerator = Expression.Assign(enumerator, Expression.Convert(getEnumeratorCall, enumeratorType));
             var assignToCollection = Expression.Assign(collection, Expression.Convert(Target, collectionType));
-            var moveNextCall = Expression.Call(enumerator, typeof(IEnumerator).GetMethod("MoveNext"));
+            var moveNextCall = Expression.Call(enumerator, typeof(IEnumerator).GetTypeInfo().GetMethod("MoveNext"));
             var currentProperty = Expression.Property(enumerator, "Current");
             var breakLabel = Expression.Label();
 
