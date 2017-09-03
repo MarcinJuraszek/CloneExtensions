@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Linq;
 
 namespace CloneExtensions
 {
@@ -39,8 +38,9 @@ namespace CloneExtensions
 
         public static T GetFromClonedObjects<T>(Dictionary<object, object> clonedObjects, T source)
         {
-            var key = clonedObjects.Keys.FirstOrDefault(k => ReferenceEquals(k, source));
-            return key != null ? (T)clonedObjects[key] : default(T);
+            object returnValue;
+            clonedObjects.TryGetValue(source, out returnValue);
+            return returnValue != null ? (T)returnValue : default(T);
         }
     }
 }
