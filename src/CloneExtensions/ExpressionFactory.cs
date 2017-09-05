@@ -115,7 +115,7 @@ namespace CloneExtensions
                     .GetGenericArguments()
                     .First();
 
-                if (_type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(_type))
+                if (itemType.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(itemType))
                 {
                     return new ArrayPrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
                 }
