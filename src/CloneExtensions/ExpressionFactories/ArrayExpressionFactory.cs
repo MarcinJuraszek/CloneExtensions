@@ -9,7 +9,7 @@ namespace CloneExtensions.ExpressionFactories
     {
         private Type _itemType;
         private Expression _arrayLength;
-        private Expression _newArray;
+        protected Expression _newArray;
 
         public ArrayExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
             : base(source, target, flags, initializers, clonedObjects)
