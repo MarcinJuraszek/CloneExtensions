@@ -36,9 +36,9 @@ namespace CloneExtensions.UnitTests
 
         [TestMethod]
         [ExpectedException(typeof(InvalidOperationException))]
-        public void GetClone_AbstractClassInitializerNotSpecified_InvalidOperationExceptionThrown()
+        public void GetClone_ClassInitializerNotSpecified_InvalidOperationExceptionThrown()
         {
-            var source = (AbstractClass)new DerivedClass() { AbstractProperty = 10 };
+            NoDefaultConstructorClass source = new NoDefaultConstructorClass(10);
             var target = CloneFactory.GetClone(source);
         }
 
@@ -57,7 +57,7 @@ namespace CloneExtensions.UnitTests
         [ExpectedException(typeof(InvalidOperationException))]
         public void GetClone_InterfaceInitializerNotSpecified_InvalidOperationExceptionThrown()
         {
-            IInterface source = new DerivedClass() { InterfaceProperty = 10 };
+            INoDefaultConstructor source = new NoDefaultConstructorClass(10);
             var target = CloneFactory.GetClone(source);
         }
 
@@ -132,6 +132,24 @@ namespace CloneExtensions.UnitTests
         class CircularReference2
         {
             public CircularReference1 Other { get;set; }
+        }
+
+        interface INoDefaultConstructor
+        {    
+        }
+
+        class NoDefaultConstructorClass : INoDefaultConstructor
+        {
+            public NoDefaultConstructorClass(int propOne)
+            {
+                PropOne = PropOne;
+            }
+
+            private NoDefaultConstructorClass()
+            {
+            }
+
+            public int PropOne { get; set; }
         }
     }
 }
