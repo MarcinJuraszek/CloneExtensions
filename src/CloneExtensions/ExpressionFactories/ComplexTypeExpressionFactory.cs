@@ -11,14 +11,12 @@ namespace CloneExtensions.ExpressionFactories
     {
         Type _type;
         Expression _typeExpression;
-        private static MethodInfo _helper = typeof(CloneItDelegateCache)
-            .GetRuntimeMethod("Get", new[] { typeof(object) });
 
         public ComplexTypeExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects)
             : base(source, target, flags, initializers, clonedObjects)
         {
             _type = typeof(T);
-            _typeExpression = Expression.Constant(_type, typeof(Type));
+            _typeExpression = Expression.Constant(_type, typeof(Type));   
         }
 
         public override bool AddNullCheck
@@ -39,28 +37,8 @@ namespace CloneExtensions.ExpressionFactories
 
         protected override Expression GetCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            var containsKey = Expression.Variable(typeof(bool));
-            var containsKeyCall = Expression.Call(Initializers, "ContainsKey", null, _typeExpression);
-            var assignContainsKey = Expression.Assign(containsKey, containsKeyCall);
-
-            var ifThenElse = Expression.IfThenElse(
-                Expression.Or(containsKey, Expression.TypeEqual(Source, _type)),
-                GetAreSameTypeBlock(getItemCloneExpression, containsKey),
-                GetAreDiffTypeBlock());
-
-            return Expression.Block(
-                new[] { containsKey },
-                assignContainsKey,
-                ifThenElse);
-        }
-
-        private BlockExpression GetAreSameTypeBlock(
-            Func<Type, Expression, Expression> getItemCloneExpression,
-            ParameterExpression containsKey)
-        {
-            var initialization = GetInitializationExpression(containsKey);
-
-            var fields =
+            var initialization = GetInitializationExpression();
+            var fields = 
                 Expression.IfThen(
                     Helpers.GetCloningFlagsExpression(CloningFlags.Fields, Flags),
                     GetFieldsCloneExpression(getItemCloneExpression)
@@ -76,28 +54,11 @@ namespace CloneExtensions.ExpressionFactories
             return Expression.Block(initialization, GetAddToClonedObjectsExpression(), fields, properties, collectionItems);
         }
 
-        private BlockExpression GetAreDiffTypeBlock()
+        private Expression GetInitializationExpression()
         {
-            var func = Expression.Variable(typeof(CloneItDelegate), "func");
+            // initializers.ContainsKey method call
+            var containsKeyCall = Expression.Call(Initializers, "ContainsKey", null, _typeExpression);
 
-            var sourceAsObject = Expression.Convert(Source, typeof(object));
-
-            var assignFunc = Expression.Assign(
-                func,
-                Expression.Call(_helper, sourceAsObject));
-
-            var assign = Expression.Assign(
-                Target,
-                Expression.Convert(Expression.Invoke(func, sourceAsObject, Flags, Initializers, ClonedObjects), _type));
-
-            return Expression.Block(
-                new[] { func },
-                assignFunc,
-                assign);
-        }
-
-        private Expression GetInitializationExpression(ParameterExpression containsKey)
-        {
             // initializer delegate invoke
             var dictIndex = Expression.Property(Initializers, "Item", _typeExpression);
             var funcInvokeCall = Expression.Call(dictIndex, "Invoke", null, Expression.Convert(Source, typeof(object)));
@@ -107,7 +68,7 @@ namespace CloneExtensions.ExpressionFactories
             var constructor = _type.GetConstructor(new Type[0]);
 
             return Expression.IfThenElse(
-                containsKey,
+                containsKeyCall,
                 Expression.Assign(Target, initializerCall),
                 (_type.IsAbstract() || _type.IsInterface() || (!_type.IsValueType() && constructor == null)) ?
                     Helpers.GetThrowInvalidOperationExceptionExpression(_type) :
