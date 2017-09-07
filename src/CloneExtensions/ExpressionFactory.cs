@@ -1,6 +1,7 @@
 ﻿using CloneExtensions.ExpressionFactories;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace CloneExtensions
@@ -108,7 +109,20 @@ namespace CloneExtensions
             }
             else if (_type.IsArray)
             {
-                return new ArrayExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
+                var itemType = _type
+                    .GetInterfaces()
+                    .First(x => x.IsGenericType() && x.GetGenericTypeDefinition() == typeof(ICollection<>))
+                    .GetGenericArguments()
+                    .First();
+
+                if (itemType.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(itemType))
+                {
+                    return new ArrayPrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
+                }
+                else
+                {
+                    return new ArrayExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
+                }
             }
             else if (_type.IsGenericType() &&
                 (_type.GetGenericTypeDefinition() == typeof(Tuple<>)
