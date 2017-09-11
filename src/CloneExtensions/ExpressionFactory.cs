@@ -140,6 +140,15 @@ namespace CloneExtensions
             {
                 return new KeyValuePairExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
+            else if (_type.IsGenericType() && _type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var itemType = _type.GetGenericArguments()[0];
+
+                if (itemType.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(itemType))
+                {
+                    return new ListPrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
+                }
+            }
 
             return new ComplexTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
         }
