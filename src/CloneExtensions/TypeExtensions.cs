@@ -11,6 +11,11 @@ namespace CloneExtensions
             return type.IsPrimitive() || CloneFactory.KnownImmutableTypes.Contains(type);
         }
 
+        public static bool UsePrimitive(this Type type)
+        {
+            return type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(type);
+        }
+
 #if NET40 || NET45 || NET461
         public static bool IsAbstract(this Type type)
         {

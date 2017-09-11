@@ -99,7 +99,7 @@ namespace CloneExtensions
 
         private static IExpressionFactory<T> GetExpressionFactory(ParameterExpression source, Expression target, ParameterExpression flags, ParameterExpression initializers, ParameterExpression clonedObjects, LabelTarget returnLabel)
         {
-            if (_type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(_type))
+            if (_type.UsePrimitive())
             {
                 return new PrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
             }
@@ -115,7 +115,7 @@ namespace CloneExtensions
                     .GetGenericArguments()
                     .First();
 
-                if (itemType.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(itemType))
+                if (itemType.UsePrimitive())
                 {
                     return new ArrayPrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
                 }
@@ -144,7 +144,7 @@ namespace CloneExtensions
             {
                 var itemType = _type.GetGenericArguments()[0];
 
-                if (itemType.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(itemType))
+                if (itemType.UsePrimitive())
                 {
                     return new ListPrimitiveTypeExpressionFactory<T>(source, target, flags, initializers, clonedObjects);
                 }
