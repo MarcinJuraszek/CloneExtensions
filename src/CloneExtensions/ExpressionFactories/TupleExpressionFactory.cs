@@ -18,7 +18,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
@@ -26,7 +26,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
@@ -63,13 +63,13 @@ namespace CloneExtensions.ExpressionFactories
 
             var constructor = typeof(T).GetConstructors()[0];
 
-            return
-                Expression.Assign(
-                    Target,
-                    Expression.New(
-                        constructor,
-                        itemsCloneExpressions
-                    ));
+            var assign = Expression.Assign(
+                Target,
+                Expression.New(constructor, itemsCloneExpressions));
+
+            return Expression.Block(
+                assign,
+                GetAddToClonedObjectsExpression());
         }
     }
 }
