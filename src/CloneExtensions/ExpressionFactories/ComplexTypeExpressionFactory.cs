@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Deipax.Core.Common;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,23 +82,41 @@ namespace CloneExtensions.ExpressionFactories
 
         private Expression GetFieldsCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            var fields = from f in _type.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance)
-                         where !f.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
-                         where !f.IsInitOnly
-                         select new Member(f, f.FieldType);
+            var fields = ModelInfo<T>
+                .Fields
+                .Where(x =>
+                    x.CanRead &&
+                    x.CanWrite &&
+                    x.IsPublic &&
+                    !x.IsStatic &&
+                    !x.IsBackingField &&
+                    x.MemberInfo.GetCustomAttributes(typeof(NonClonedAttribute), true).Count() == 0)
+                .Select(x => new Member(x.MemberInfo, x.Type))
+                .ToList();
 
             return GetMembersCloneExpression(fields.ToArray(), getItemCloneExpression);
         }
 
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            // get all public properties with public setter and getter, which are not indexed properties
-            var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                             let setMethod = p.GetSetMethod(false)
-                             let getMethod = p.GetGetMethod(false)
-                             where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
-                             where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                             select new Member(p, p.PropertyType);
+            var properties = ModelInfo<T>
+                .Properties
+                .Where(x =>
+                    x.CanRead &&
+                    x.CanWrite &&
+                    x.IsPublic &&
+                    !x.IsStatic &&
+                    !x.HasParameters &&
+                    x.MemberInfo.GetCustomAttributes(typeof(NonClonedAttribute), true).Count() == 0)
+                .Select(x => new
+                {
+                    Type = x.Type,
+                    MemberInfo = x.HasBackingField ?
+                        (MemberInfo)x.BackingField.FieldInfo :
+                        (MemberInfo)x.PropertyInfo
+                })
+                .Select(x => new Member(x.MemberInfo, x.Type))
+                .ToList();
 
             return GetMembersCloneExpression(properties.ToArray(), getItemCloneExpression);
         }
