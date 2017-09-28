@@ -38,13 +38,17 @@ namespace CloneExtensions.ExpressionFactories
 
         protected override Expression GetCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            return
-                Expression.Assign(
-                    Target,
-                    Expression.New(
-                        _constructor,
-                        getItemCloneExpression(_keyType, Expression.Property(Source, "Key")),
-                        getItemCloneExpression(_valueType, Expression.Property(Source, "Value"))));
+            var cloneKeyCall = _keyType.UsePrimitive() ? 
+                Expression.Property(Source, "Key") : 
+                getItemCloneExpression(_keyType, Expression.Property(Source, "Key"));
+
+            var cloneValueCall = _valueType.UsePrimitive() ? 
+                Expression.Property(Source, "Value") : 
+                getItemCloneExpression(_valueType, Expression.Property(Source, "Value"));
+            
+            return Expression.Assign(
+                Target,
+                Expression.New(_constructor, cloneKeyCall, cloneValueCall));
         }
     }
 }

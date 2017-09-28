@@ -18,7 +18,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
@@ -26,7 +26,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
@@ -38,30 +38,38 @@ namespace CloneExtensions.ExpressionFactories
             var loopCount = Math.Min(_genericTypes.Length, 7);
             for (int i = 0; i < loopCount; i++)
             {
-                itemsCloneExpressions[i] = getItemCloneExpression(
-                                            _genericTypes[i],
-                                            Expression.Property(
-                                                Source,
-                                                "Item" + (i + 1).ToString(CultureInfo.InvariantCulture)));
+                var itemType = _genericTypes[i];
+                var sourceProperty = Expression.Property(
+                    Source,
+                    "Item" + (i + 1).ToString(CultureInfo.InvariantCulture));
+
+                itemsCloneExpressions[i] = itemType.UsePrimitive() ?
+                    sourceProperty : 
+                    getItemCloneExpression(itemType, sourceProperty);
             }
 
             // add Rest expression if it's necessary
             if (_genericTypes.Length == 8)
-                itemsCloneExpressions[7] = getItemCloneExpression(
-                                            _genericTypes[7],
-                                            Expression.Property(
-                                                Source,
-                                                "Rest"));
+            {
+                var itemType = _genericTypes[7];
+                var sourceProperty = Expression.Property(
+                    Source,
+                    "Rest");
+
+                itemsCloneExpressions[7] = itemType.UsePrimitive() ?
+                    sourceProperty :
+                    getItemCloneExpression(itemType, sourceProperty);
+            }
 
             var constructor = typeof(T).GetConstructors()[0];
 
-            return
-                Expression.Assign(
-                    Target,
-                    Expression.New(
-                        constructor,
-                        itemsCloneExpressions
-                    ));
+            var assign = Expression.Assign(
+                Target,
+                Expression.New(constructor, itemsCloneExpressions));
+
+            return Expression.Block(
+                assign,
+                GetAddToClonedObjectsExpression());
         }
     }
 }

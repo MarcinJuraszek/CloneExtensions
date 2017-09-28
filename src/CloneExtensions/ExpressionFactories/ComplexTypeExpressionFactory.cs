@@ -111,7 +111,9 @@ namespace CloneExtensions.ExpressionFactories
                 members.Select(m =>
                     Expression.Assign(
                         Expression.MakeMemberAccess(Target, m.Info),
-                        getItemCloneExpression(m.Type, Expression.MakeMemberAccess(Source, m.Info))
+                        m.Type.UsePrimitive() ?
+                            Expression.MakeMemberAccess(Source, m.Info) :
+                            getItemCloneExpression(m.Type, Expression.MakeMemberAccess(Source, m.Info))
                         )));
         }
 
@@ -141,6 +143,10 @@ namespace CloneExtensions.ExpressionFactories
             var currentProperty = Expression.Property(enumerator, "Current");
             var breakLabel = Expression.Label();
 
+            var cloneItemCall = itemType.UsePrimitive() ? 
+                currentProperty : 
+                GetCloneMethodCall(itemType, currentProperty);
+
             return Expression.Block(
                 new[] { enumerator, collection },
                 assignToEnumerator,
@@ -148,14 +154,12 @@ namespace CloneExtensions.ExpressionFactories
                 Expression.Loop(
                     Expression.IfThenElse(
                         Expression.NotEqual(moveNextCall, Expression.Constant(false, typeof(bool))),
-                        Expression.Call(collection, "Add", null,
-                            GetCloneMethodCall(itemType, currentProperty)),
+                        Expression.Call(collection, "Add", null, cloneItemCall),
                         Expression.Break(breakLabel)
                     ),
                     breakLabel
                 )
             );
         }
-
     }
 }
