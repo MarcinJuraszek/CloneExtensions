@@ -178,3 +178,4 @@ FakesAssemblies/
 # Roslyn
 *.sln.ide/
 BenchmarkDotNet.Artifacts/results/
+.vscode/

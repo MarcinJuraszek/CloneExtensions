@@ -91,15 +91,36 @@ namespace CloneExtensions.ExpressionFactories
 
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
+            // get all private fields with `>k_BackingField` in case we can use them instead of automatic properties
+            var backingFields = _type.GetTypeInfo().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+                                    .Where(f => f.Name.Contains(">k__BackingField"))
+                                    .ToDictionary(f => f.Name);
+
             // get all public properties with public setter and getter, which are not indexed properties
             var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                              let setMethod = p.GetSetMethod(false)
                              let getMethod = p.GetGetMethod(false)
                              where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
                              where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                             select new Member(p, p.PropertyType);
+                             select p;
 
-            return GetMembersCloneExpression(properties.ToArray(), getItemCloneExpression);
+            // use the backing fields if available, otherwise use property
+            var members = new List<Member>();
+            foreach (var property in properties)
+            {
+                FieldInfo fieldInfo;
+                if (backingFields.TryGetValue("<" + property.Name + ">k__BackingField", out fieldInfo)
+                    && fieldInfo.DeclaringType == property.DeclaringType)
+                {
+                    members.Add(new Member(fieldInfo, fieldInfo.FieldType));
+                }
+                else
+                {
+                    members.Add(new Member(property, property.PropertyType));
+                }
+            }
+
+            return GetMembersCloneExpression(members.ToArray(), getItemCloneExpression);
         }
 
         private Expression GetMembersCloneExpression(Member[] members, Func<Type, Expression, Expression> getItemCloneExpression)
