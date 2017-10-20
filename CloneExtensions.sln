@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloneExtensions", "src\CloneExtensions\CloneExtensions.csproj", "{87214314-753C-4DA0-B244-1C7B25354AA8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloneExtensions.UnitTests", "src\CloneExtensions.UnitTests\CloneExtensions.UnitTests.csproj", "{FFC4A5C4-46EE-4D9D-A94B-8F365F7971D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloneExtensions.Benchmarks", "src\CloneExtensions.Benchmarks\CloneExtensions.Benchmarks.csproj", "{9B571247-FBBC-456A-A334-085B17751897}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,14 @@ Global
 		{FFC4A5C4-46EE-4D9D-A94B-8F365F7971D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFC4A5C4-46EE-4D9D-A94B-8F365F7971D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFC4A5C4-46EE-4D9D-A94B-8F365F7971D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B571247-FBBC-456A-A334-085B17751897}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{9B571247-FBBC-456A-A334-085B17751897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B571247-FBBC-456A-A334-085B17751897}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6A8AEA7D-AFAE-4587-BBDF-00A9FB26917F}
 	EndGlobalSection
 EndGlobal
