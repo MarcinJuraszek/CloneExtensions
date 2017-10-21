@@ -9,6 +9,8 @@ namespace CloneExtensions.ExpressionFactories
 {
     class ComplexTypeExpressionFactory<T> : DeepShallowExpressionFactoryBase<T>
     {
+        private static Type _objectType = typeof(object);
+
         Type _type;
         Expression _typeExpression;
 
@@ -92,9 +94,7 @@ namespace CloneExtensions.ExpressionFactories
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
             // get all private fields with `>k_BackingField` in case we can use them instead of automatic properties
-            var backingFields = _type.GetTypeInfo().GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                                    .Where(f => f.Name.Contains(">k__BackingField"))
-                                    .ToDictionary(f => f.Name);
+            var backingFields = GetBackingFields(_type).ToDictionary(f => f.Name);
 
             // get all public properties with public setter and getter, which are not indexed properties
             var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -181,6 +181,22 @@ namespace CloneExtensions.ExpressionFactories
                     breakLabel
                 )
             );
+        }
+
+        private IEnumerable<FieldInfo> GetBackingFields(Type type)
+        {
+            TypeInfo typeInfo = type.GetTypeInfo();
+
+            while(typeInfo.UnderlyingSystemType != _objectType)
+            {
+                foreach(var field in typeInfo.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                {
+                    if (field.Name.Contains(">k__BackingField") && field.DeclaringType == typeInfo.UnderlyingSystemType)
+                        yield return field;
+                }
+
+                typeInfo = typeInfo.BaseType.GetTypeInfo();
+            }
         }
     }
 }
