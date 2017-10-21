@@ -24,7 +24,7 @@ namespace CloneExtensions.UnitTests
             var source = Enumerable.Range(0, 10).ToList();
             var target = CloneFactory.GetClone(source, CloningFlags.Properties);
             Assert.AreNotSame(source, target);
-            Assert.AreEqual(source.Capacity, target.Capacity);
+            Assert.AreEqual(source.Count, target.Capacity);
             Assert.AreEqual(0, target.Count);
         }
 

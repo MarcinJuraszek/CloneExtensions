@@ -187,7 +187,7 @@ namespace CloneExtensions.ExpressionFactories
         {
             TypeInfo typeInfo = type.GetTypeInfo();
 
-            while(typeInfo.UnderlyingSystemType != _objectType)
+            while(typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
             {
                 foreach(var field in typeInfo.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 {
@@ -195,7 +195,7 @@ namespace CloneExtensions.ExpressionFactories
                         yield return field;
                 }
 
-                typeInfo = typeInfo.BaseType.GetTypeInfo();
+                typeInfo = typeInfo.BaseType?.GetTypeInfo();
             }
         }
     }
