@@ -16,11 +16,6 @@ namespace CloneExtensions
             return type.IsPrimitiveOrKnownImmutable() || typeof(Delegate).IsAssignableFrom(type);
         }
 
-        public static Type BaseType(this Type type)
-        {
-            return type.GetTypeInfo().BaseType;
-        }
-
 #if NET40 || NET45 || NET461
         public static bool IsAbstract(this Type type)
         {
