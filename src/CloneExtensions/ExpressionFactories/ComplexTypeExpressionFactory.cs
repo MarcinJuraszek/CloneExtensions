@@ -94,7 +94,7 @@ namespace CloneExtensions.ExpressionFactories
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
             // get all private fields with `>k_BackingField` in case we can use them instead of automatic properties
-            var backingFields = GetBackingFields(_type).ToDictionary(f => f.Name);
+            var backingFields = GetBackingFields(_type).ToDictionary(f => new BackingFieldInfo(f.DeclaringType, f.Name));
 
             // get all public properties with public setter and getter, which are not indexed properties
             var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -109,8 +109,7 @@ namespace CloneExtensions.ExpressionFactories
             foreach (var property in properties)
             {
                 FieldInfo fieldInfo;
-                if (backingFields.TryGetValue("<" + property.Name + ">k__BackingField", out fieldInfo)
-                    && fieldInfo.DeclaringType == property.DeclaringType)
+                if (backingFields.TryGetValue(new BackingFieldInfo(property.DeclaringType, "<" + property.Name + ">k__BackingField"), out fieldInfo))
                 {
                     members.Add(new Member(fieldInfo, fieldInfo.FieldType));
                 }
@@ -196,6 +195,28 @@ namespace CloneExtensions.ExpressionFactories
                 }
 
                 typeInfo = typeInfo.BaseType?.GetTypeInfo();
+            }
+        }
+
+        private struct BackingFieldInfo : IEquatable<BackingFieldInfo>
+        {
+            public Type DeclaredType { get; }
+            public string Name { get; set; }
+
+            public BackingFieldInfo(Type declaringType, string name) : this()
+            {
+                DeclaredType = declaringType;
+                Name = name;
+            }
+
+            public bool Equals(BackingFieldInfo other)
+            {
+                return other.DeclaredType == this.DeclaredType && other.Name == this.Name;
+            }
+
+            public override int GetHashCode()
+            {
+                return (17 * 23 + DeclaredType.GetHashCode()) * 23 + Name.GetHashCode();
             }
         }
     }
