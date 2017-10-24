@@ -88,6 +88,18 @@ namespace CloneExtensions.UnitTests
             Assert.AreSame(target.First, target.Second, "Are the same");
         }
 
+        [TestMethod]
+        public void GetClone_DerivedTypeWithShadowedProperty_ClonnedProperly()
+        {
+            DerivedClass1 source = new DerivedClass1() { Property = 1 };
+            ((BaseClass)source).Property = 2;
+
+            var target = CloneFactory.GetClone(source);
+
+            Assert.AreEqual(1, target.Property);
+            Assert.AreEqual(2, ((BaseClass)target).Property);
+        }
+
         struct SimpleStruct
         {
             public int _field;
@@ -132,6 +144,16 @@ namespace CloneExtensions.UnitTests
         class CircularReference2
         {
             public CircularReference1 Other { get;set; }
+        }
+
+        class BaseClass
+        {
+            public int Property { get; set; }
+        }
+
+        class DerivedClass1 : BaseClass
+        {
+            public new int Property { get; set; }
         }
     }
 }
