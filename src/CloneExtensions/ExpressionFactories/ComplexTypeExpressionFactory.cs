@@ -9,6 +9,8 @@ namespace CloneExtensions.ExpressionFactories
 {
     class ComplexTypeExpressionFactory<T> : DeepShallowExpressionFactoryBase<T>
     {
+        private static Type _objectType = typeof(object);
+
         Type _type;
         Expression _typeExpression;
 
@@ -91,15 +93,33 @@ namespace CloneExtensions.ExpressionFactories
 
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
+            // get all private fields with `>k_BackingField` in case we can use them instead of automatic properties
+            var backingFields = GetBackingFields(_type).ToDictionary(f => new BackingFieldInfo(f.DeclaringType, f.Name));
+
             // get all public properties with public setter and getter, which are not indexed properties
             var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                              let setMethod = p.GetSetMethod(false)
                              let getMethod = p.GetGetMethod(false)
                              where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
                              where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                             select new Member(p, p.PropertyType);
+                             select p;
 
-            return GetMembersCloneExpression(properties.ToArray(), getItemCloneExpression);
+            // use the backing fields if available, otherwise use property
+            var members = new List<Member>();
+            foreach (var property in properties)
+            {
+                FieldInfo fieldInfo;
+                if (backingFields.TryGetValue(new BackingFieldInfo(property.DeclaringType, "<" + property.Name + ">k__BackingField"), out fieldInfo))
+                {
+                    members.Add(new Member(fieldInfo, fieldInfo.FieldType));
+                }
+                else
+                {
+                    members.Add(new Member(property, property.PropertyType));
+                }
+            }
+
+            return GetMembersCloneExpression(members.ToArray(), getItemCloneExpression);
         }
 
         private Expression GetMembersCloneExpression(Member[] members, Func<Type, Expression, Expression> getItemCloneExpression)
@@ -160,6 +180,44 @@ namespace CloneExtensions.ExpressionFactories
                     breakLabel
                 )
             );
+        }
+
+        private IEnumerable<FieldInfo> GetBackingFields(Type type)
+        {
+            TypeInfo typeInfo = type.GetTypeInfo();
+
+            while(typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
+            {
+                foreach(var field in typeInfo.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                {
+                    if (field.Name.Contains(">k__BackingField") && field.DeclaringType == typeInfo.UnderlyingSystemType)
+                        yield return field;
+                }
+
+                typeInfo = typeInfo.BaseType?.GetTypeInfo();
+            }
+        }
+
+        private struct BackingFieldInfo : IEquatable<BackingFieldInfo>
+        {
+            public Type DeclaredType { get; }
+            public string Name { get; set; }
+
+            public BackingFieldInfo(Type declaringType, string name) : this()
+            {
+                DeclaredType = declaringType;
+                Name = name;
+            }
+
+            public bool Equals(BackingFieldInfo other)
+            {
+                return other.DeclaredType == this.DeclaredType && other.Name == this.Name;
+            }
+
+            public override int GetHashCode()
+            {
+                return (17 * 23 + DeclaredType.GetHashCode()) * 23 + Name.GetHashCode();
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace CloneExtensions.UnitTests
             var source = Enumerable.Range(0, 10).ToList();
             var target = CloneFactory.GetClone(source, CloningFlags.Properties);
             Assert.AreNotSame(source, target);
-            Assert.AreEqual(source.Capacity, target.Capacity);
+            Assert.AreEqual(source.Count, target.Capacity);
             Assert.AreEqual(0, target.Count);
         }
 
@@ -67,6 +67,20 @@ namespace CloneExtensions.UnitTests
             Assert.IsTrue(source.SequenceEqual(target));
         }
 
+        [TestMethod]
+        public void GetClone_DerivedTypeWithShadowedProperty_ClonnedProperly()
+        {
+            DerivedClass source = new DerivedClass() { Property = 1 };
+            ((BaseClass)source).Property = 2;
+
+            var target = CloneFactory.GetClone(source);
+
+            Assert.AreEqual(1, target.Property);
+
+            // TODO: Make it work ...
+            // Assert.AreEqual(2, ((BaseClass)target).Property);
+        }
+
         class MyClass
         {
             public int _field;
@@ -85,6 +99,16 @@ namespace CloneExtensions.UnitTests
             {
                 return _field.GetHashCode() ^ Property.GetHashCode();
             }
+        }
+
+        class BaseClass
+        {
+            public int Property { get; set; }
+        }
+
+        class DerivedClass : BaseClass
+        {
+            public new int Property { get; set; }
         }
     }
 }

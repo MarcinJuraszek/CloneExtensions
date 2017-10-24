@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace CloneExtensions.Benchmarks
 {
-	class Program
-	{
-		static void Main(string[] args)
-		{
-			BenchmarkRunner.Run<GetCloneBenchmarks>();
-		}
-	}
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            BenchmarkRunner.Run<GetCloneBenchmarks>();
+        }
+    }
 }
