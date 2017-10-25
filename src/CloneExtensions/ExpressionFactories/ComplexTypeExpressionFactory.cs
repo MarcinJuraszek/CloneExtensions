@@ -96,16 +96,9 @@ namespace CloneExtensions.ExpressionFactories
             // get all private fields with `>k_BackingField` in case we can use them instead of automatic properties
             var backingFields = GetBackingFields(_type).ToDictionary(f => new BackingFieldInfo(f.DeclaringType, f.Name));
 
-            // get all public properties with public setter and getter, which are not indexed properties
-            var properties = from p in _type.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                             let setMethod = p.GetSetMethod(false)
-                             let getMethod = p.GetGetMethod(false)
-                             where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
-                             where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                             select p;
-
             // use the backing fields if available, otherwise use property
             var members = new List<Member>();
+            var properties = GetProperties(_type);
             foreach (var property in properties)
             {
                 FieldInfo fieldInfo;
@@ -182,16 +175,38 @@ namespace CloneExtensions.ExpressionFactories
             );
         }
 
-        private IEnumerable<FieldInfo> GetBackingFields(Type type)
+        private static IEnumerable<FieldInfo> GetBackingFields(Type type)
         {
             TypeInfo typeInfo = type.GetTypeInfo();
 
             while(typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
             {
-                foreach(var field in typeInfo.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                foreach (var field in typeInfo.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 {
                     if (field.Name.Contains(">k__BackingField") && field.DeclaringType == typeInfo.UnderlyingSystemType)
                         yield return field;
+                }
+
+                typeInfo = typeInfo.BaseType?.GetTypeInfo();
+            }
+        }
+
+        private static IEnumerable<PropertyInfo> GetProperties(Type type)
+        {
+            TypeInfo typeInfo = type.GetTypeInfo();
+
+            while (typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
+            {
+                var properties = from p in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    let setMethod = p.GetSetMethod(false)
+                    let getMethod = p.GetGetMethod(false)
+                    where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
+                    where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
+                    select p;
+
+                foreach (var p in properties)
+                {
+                    yield return p;
                 }
 
                 typeInfo = typeInfo.BaseType?.GetTypeInfo();
