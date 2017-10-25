@@ -98,7 +98,8 @@ namespace CloneExtensions.ExpressionFactories
 
             // use the backing fields if available, otherwise use property
             var members = new List<Member>();
-            foreach (var property in GetProperties(_type))
+            var properties = GetProperties(_type);
+            foreach (var property in properties)
             {
                 FieldInfo fieldInfo;
                 if (backingFields.TryGetValue(new BackingFieldInfo(property.DeclaringType, "<" + property.Name + ">k__BackingField"), out fieldInfo))
@@ -196,12 +197,11 @@ namespace CloneExtensions.ExpressionFactories
 
             while (typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
             {
-                var properties = from p in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                var properties = from p in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                     let setMethod = p.GetSetMethod(false)
                     let getMethod = p.GetGetMethod(false)
                     where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
                     where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                    where p.DeclaringType == typeInfo.UnderlyingSystemType
                     select p;
 
                 foreach (var p in properties)

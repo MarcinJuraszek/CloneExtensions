@@ -91,13 +91,57 @@ namespace CloneExtensions.UnitTests
         [TestMethod]
         public void GetClone_DerivedTypeWithShadowedProperty_ClonnedProperly()
         {
-            DerivedClass1 source = new DerivedClass1() { Property = 1 };
-            ((BaseClass)source).Property = 2;
+            DerivedClassOne source = new DerivedClassOne()
+            {
+                Property = 1,
+                VirtualProperty = 2,
+                VirtualProperty2 = 3,
+                AbstractProperty = 4,
+                VirtualProperty3 = "test1"
+            };
+
+            Assert.AreEqual(2, ((BaseClassOne)source).VirtualProperty);
+            Assert.AreEqual(3, ((BaseClassOne)source).VirtualProperty2);
+            Assert.AreEqual(4, ((BaseClassOne)source).AbstractProperty);
+            Assert.AreEqual("test1", ((BaseClassOne)source).VirtualProperty3);
+
+            ((BaseClassOne)source).Property = 5;
+            ((BaseClassOne)source).VirtualProperty = 6;
+            ((BaseClassOne)source).VirtualProperty2 = 7;
+            ((BaseClassOne)source).AbstractProperty = 8;
+            ((BaseClassOne)source).VirtualProperty3 = "test2";
+
+            Assert.AreEqual(1, source.Property);
+            Assert.AreEqual(5, ((BaseClassOne)source).Property);
+
+            Assert.AreEqual(6, source.VirtualProperty);
+            Assert.AreEqual(6, ((BaseClassOne)source).VirtualProperty);
+
+            Assert.AreEqual(7, source.VirtualProperty2);
+            Assert.AreEqual(7, ((BaseClassOne)source).VirtualProperty2);
+
+            Assert.AreEqual(8, source.AbstractProperty);
+            Assert.AreEqual(8, ((BaseClassOne)source).AbstractProperty);
+
+            Assert.AreEqual("test2", source.VirtualProperty3);
+            Assert.AreEqual("test2", ((BaseClassOne)source).VirtualProperty3);
 
             var target = CloneFactory.GetClone(source);
 
-            Assert.AreEqual(1, target.Property);
-            Assert.AreEqual(2, ((BaseClass)target).Property);
+            Assert.AreEqual(1, source.Property);
+            Assert.AreEqual(5, ((BaseClassOne)source).Property);
+
+            Assert.AreEqual(6, source.VirtualProperty);
+            Assert.AreEqual(6, ((BaseClassOne)source).VirtualProperty);
+
+            Assert.AreEqual(7, source.VirtualProperty2);
+            Assert.AreEqual(7, ((BaseClassOne)source).VirtualProperty2);
+
+            Assert.AreEqual(8, source.AbstractProperty);
+            Assert.AreEqual(8, ((BaseClassOne)source).AbstractProperty);
+
+            Assert.AreEqual("test2", source.VirtualProperty3);
+            Assert.AreEqual("test2", ((BaseClassOne)source).VirtualProperty3);
         }
 
         struct SimpleStruct
@@ -146,14 +190,29 @@ namespace CloneExtensions.UnitTests
             public CircularReference1 Other { get;set; }
         }
 
-        class BaseClass
+        abstract class BaseClassOne
         {
             public int Property { get; set; }
+            virtual public int VirtualProperty { get; set; }
+            abstract public int AbstractProperty { get; set; }
+            virtual public int VirtualProperty2 { get; set; }
+
+            virtual public string VirtualProperty3
+            {
+                get { return _virtualProperty; }
+                set { _virtualProperty = string.Empty; }
+            }
+     
+            private string _virtualProperty;
         }
 
-        class DerivedClass1 : BaseClass
+        class DerivedClassOne : BaseClassOne
         {
             public new int Property { get; set; }
+            public override int AbstractProperty { get; set; }
+            public override int VirtualProperty { get; set; }
+            // use the default implementation for VirtualProperty2
+            public override string VirtualProperty3 { get; set; }
         }
     }
 }
