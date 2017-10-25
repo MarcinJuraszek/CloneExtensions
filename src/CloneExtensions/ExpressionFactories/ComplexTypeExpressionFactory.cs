@@ -193,24 +193,53 @@ namespace CloneExtensions.ExpressionFactories
 
         private static IEnumerable<PropertyInfo> GetProperties(Type type)
         {
-            TypeInfo typeInfo = type.GetTypeInfo();
+            List<PropertyInfo> properties = new List<PropertyInfo>();
 
-            while (typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
-            {
-                var properties = from p in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                    let setMethod = p.GetSetMethod(false)
-                    let getMethod = p.GetGetMethod(false)
-                    where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
-                    where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                    select p;
-
-                foreach (var p in properties)
+            var allProperties = 
+                (from p in GetAllProperties(type)
+                let setMethod = p.GetSetMethod(false)
+                select new
                 {
-                    yield return p;
-                }
+                    Prop = p,
+                    IsVirtualOrAbstract = setMethod.IsAbstract || setMethod.IsVirtual
+                }).ToList();
 
-                typeInfo = typeInfo.BaseType?.GetTypeInfo();
+            // If properties that share a name are marked as abstract
+            // or virtual, then only one of them is needed in order to
+            // set the value of the property.  Any of them should 
+            // set the value correctly, use the first one.
+            allProperties
+                .Where(x => x.IsVirtualOrAbstract)
+                .Select(x => x.Prop)
+                .GroupBy(x => x.Name)
+                .ToList()
+                .ForEach(x => properties.Add(x.First()));
+
+            // Add all non-virtual/non-abstract properties
+            properties.AddRange(allProperties.Where(x => !x.IsVirtualOrAbstract).Select(x => x.Prop));
+
+            return properties;
+        }
+
+        private static List<PropertyInfo> GetAllProperties(Type type)
+        {
+            if (type == null)
+            {
+                return new List<PropertyInfo>();
             }
+
+            var typeInfo = type.GetTypeInfo();
+
+            var properties = 
+                (from p in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                let setMethod = p.GetSetMethod(false)
+                let getMethod = p.GetGetMethod(false)
+                where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
+                where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
+                select p).ToList();
+
+            properties.AddRange(GetAllProperties(typeInfo.BaseType));
+            return properties;
         }
 
         private struct BackingFieldInfo : IEquatable<BackingFieldInfo>

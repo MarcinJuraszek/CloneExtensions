@@ -198,7 +198,7 @@ namespace CloneExtensions.UnitTests
             public CircularReference1 Other { get;set; }
         }
 
-        abstract class BaseClassOne
+        abstract class BaseClassOne : IInterface
         {
             public int MyField;
 
@@ -212,7 +212,9 @@ namespace CloneExtensions.UnitTests
                 get { return _virtualProperty; }
                 set { _virtualProperty = string.Empty; }
             }
-     
+
+            public int InterfaceProperty { get; set; }
+
             private string _virtualProperty;
         }
 
