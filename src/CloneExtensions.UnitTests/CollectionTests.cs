@@ -76,9 +76,7 @@ namespace CloneExtensions.UnitTests
             var target = CloneFactory.GetClone(source);
 
             Assert.AreEqual(1, target.Property);
-
-            // TODO: Make it work ...
-            // Assert.AreEqual(2, ((BaseClass)target).Property);
+            Assert.AreEqual(2, ((BaseClass)target).Property);
         }
 
         class MyClass

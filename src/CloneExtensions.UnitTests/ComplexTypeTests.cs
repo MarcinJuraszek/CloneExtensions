@@ -152,6 +152,31 @@ namespace CloneExtensions.UnitTests
             Assert.AreEqual("test2", ((BaseClassOne)target).VirtualProperty3);
         }
 
+        [TestMethod]
+        public void GetClone_DerivedTypeWithShadowedProperty_ClonnedProperly2()
+        {
+            D source = new D()
+            {
+                Foo = "D"
+            };
+
+            ((C)source).Foo = "C";
+            ((B)source).Foo = "B";
+            ((A)source).Foo = "A";
+
+            Assert.AreEqual("C", source.Foo);
+            Assert.AreEqual("C", ((C)source).Foo);
+            Assert.AreEqual("A", ((B)source).Foo);
+            Assert.AreEqual("A", ((A)source).Foo);
+
+            var target = source.GetClone();
+
+            Assert.AreEqual("C", target.Foo);
+            Assert.AreEqual("C", ((C)target).Foo);
+            Assert.AreEqual("A", ((B)target).Foo);
+            Assert.AreEqual("A", ((A)target).Foo);
+        }
+
         struct SimpleStruct
         {
             public int _field;
@@ -227,6 +252,26 @@ namespace CloneExtensions.UnitTests
             public override int VirtualProperty { get; set; }
             // use the default implementation for VirtualProperty2
             public override string VirtualProperty3 { get; set; }
+        }
+
+        public class A
+        {
+            public virtual string Foo { get; set; }
+        }
+
+        public class B : A
+        {
+            public override string Foo { get; set; }
+        }
+
+        public class C : B
+        {
+            public virtual new string Foo { get; set; }
+        }
+
+        public class D : C
+        {
+            public override string Foo { get; set; }
         }
     }
 }
