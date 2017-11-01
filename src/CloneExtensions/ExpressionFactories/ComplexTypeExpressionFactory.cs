@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CloneExtensions.Extensions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,36 +84,38 @@ namespace CloneExtensions.ExpressionFactories
 
         private Expression GetFieldsCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            var fields = from f in _type.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance)
-                         where !f.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
-                         where !f.IsInitOnly
-                         select new Member(f, f.FieldType);
+            var fields = _type
+                .GetAllFields()
+                .Where(x =>
+                    x.CanRead &&
+                    x.CanWrite &&
+                    !x.IsLiteral &&
+                    !x.IsBackingField &&
+                    x.IsPublic &&
+                    x.GetCustomAttributes<NonClonedAttribute>().Count() == 0)
+                .Select(x => new Member(x.FieldInfo, x.FieldInfo.FieldType))
+                .ToArray();
 
-            return GetMembersCloneExpression(fields.ToArray(), getItemCloneExpression);
+            return GetMembersCloneExpression(fields, getItemCloneExpression);
         }
 
         private Expression GetPropertiesCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
         {
-            // get all private fields with `>k_BackingField` in case we can use them instead of automatic properties
-            var backingFields = GetBackingFields(_type).ToDictionary(f => new BackingFieldInfo(f.DeclaringType, f.Name));
+            var members = _type
+                .GetFilteredProperties()
+                .Where(x => 
+                    x.CanRead &&
+                    x.CanWrite &&
+                    x.IsPublic &&
+                    !x.HasParameters &&
+                    !x.IsLiteral &&
+                    x.GetCustomAttributes<NonClonedAttribute>().Count() == 0)
+                .Select(x => x.HasBackingField ?
+                    new Member(x.BackingField.FieldInfo, x.BackingField.FieldInfo.FieldType) :
+                    new Member(x.PropertyInfo, x.PropertyInfo.PropertyType))
+                .ToArray();
 
-            // use the backing fields if available, otherwise use property
-            var members = new List<Member>();
-            var properties = GetProperties(_type);
-            foreach (var property in properties)
-            {
-                FieldInfo fieldInfo;
-                if (backingFields.TryGetValue(new BackingFieldInfo(property.DeclaringType, "<" + property.Name + ">k__BackingField"), out fieldInfo))
-                {
-                    members.Add(new Member(fieldInfo, fieldInfo.FieldType));
-                }
-                else
-                {
-                    members.Add(new Member(property, property.PropertyType));
-                }
-            }
-
-            return GetMembersCloneExpression(members.ToArray(), getItemCloneExpression);
+            return GetMembersCloneExpression(members, getItemCloneExpression);
         }
 
         private Expression GetMembersCloneExpression(Member[] members, Func<Type, Expression, Expression> getItemCloneExpression)
@@ -173,66 +176,6 @@ namespace CloneExtensions.ExpressionFactories
                     breakLabel
                 )
             );
-        }
-
-        private static IEnumerable<FieldInfo> GetBackingFields(Type type)
-        {
-            TypeInfo typeInfo = type.GetTypeInfo();
-
-            while(typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
-            {
-                foreach (var field in typeInfo.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-                {
-                    if (field.Name.Contains(">k__BackingField") && field.DeclaringType == typeInfo.UnderlyingSystemType)
-                        yield return field;
-                }
-
-                typeInfo = typeInfo.BaseType?.GetTypeInfo();
-            }
-        }
-
-        private static IEnumerable<PropertyInfo> GetProperties(Type type)
-        {
-            TypeInfo typeInfo = type.GetTypeInfo();
-
-            while (typeInfo != null && typeInfo.UnderlyingSystemType != _objectType)
-            {
-                var properties = from p in typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                    let setMethod = p.GetSetMethod(false)
-                    let getMethod = p.GetGetMethod(false)
-                    where !p.GetCustomAttributes(typeof(NonClonedAttribute), true).Any()
-                    where setMethod != null && getMethod != null && !p.GetIndexParameters().Any()
-                    select p;
-
-                foreach (var p in properties)
-                {
-                    yield return p;
-                }
-
-                typeInfo = typeInfo.BaseType?.GetTypeInfo();
-            }
-        }
-
-        private struct BackingFieldInfo : IEquatable<BackingFieldInfo>
-        {
-            public Type DeclaredType { get; }
-            public string Name { get; set; }
-
-            public BackingFieldInfo(Type declaringType, string name) : this()
-            {
-                DeclaredType = declaringType;
-                Name = name;
-            }
-
-            public bool Equals(BackingFieldInfo other)
-            {
-                return other.DeclaredType == this.DeclaredType && other.Name == this.Name;
-            }
-
-            public override int GetHashCode()
-            {
-                return (17 * 23 + DeclaredType.GetHashCode()) * 23 + Name.GetHashCode();
-            }
         }
     }
 }

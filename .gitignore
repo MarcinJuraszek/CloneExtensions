@@ -179,3 +179,4 @@ FakesAssemblies/
 *.sln.ide/
 BenchmarkDotNet.Artifacts/results/
 .vscode/
+/.vs/CloneExtensions/v15/Server/sqlite3
