@@ -66,19 +66,37 @@ namespace CloneExtensions.ExpressionFactories
             var funcInvokeCall = Expression.Call(dictIndex, "Invoke", null, Expression.Convert(Source, typeof(object)));
             var initializerCall = Expression.Convert(funcInvokeCall, _type);
 
-            // parameterless constructor
-            var constructor = _type.GetConstructor(new Type[0]);
-
             return Expression.IfThenElse(
                 containsKeyCall,
                 Expression.Assign(Target, initializerCall),
-                (_type.IsAbstract() || _type.IsInterface() || (!_type.IsValueType() && constructor == null)) ?
+                (_type.IsAbstract() || _type.IsInterface()) ?
                     Helpers.GetThrowInvalidOperationExceptionExpression(_type) :
                     Expression.Assign(
                         Target,
-                        _type.IsValueType() ? (Expression)Source : Expression.New(_type)
+                        _type.IsValueType() ? (Expression)Source : GetNewExpressionFor(_type)
                     )
             );
+        }
+
+        private static NewExpression GetNewExpressionFor(Type objType)
+        {
+            ConstructorInfo ctor = objType
+                .GetConstructors()
+                .OrderBy(x => x.GetParameters().Length)
+                .First();
+
+            return
+                Expression.New
+                (
+                    ctor,
+                    ctor.GetParameters().Select(p =>
+                        p.IsOptional
+                            ? Expression.Convert(Expression.Constant(p.DefaultValue), p.ParameterType)
+                            : p.ParameterType.IsAbstract() || p.ParameterType.IsInterface() || 
+                             (p.ParameterType.IsValueType() && Nullable.GetUnderlyingType(p.ParameterType) == null)
+                                ? Expression.Default(p.ParameterType)
+                                : (Expression)GetNewExpressionFor(p.ParameterType))
+                );
         }
 
         private Expression GetFieldsCloneExpression(Func<Type, Expression, Expression> getItemCloneExpression)
