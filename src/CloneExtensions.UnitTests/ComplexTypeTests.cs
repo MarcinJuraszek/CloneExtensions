@@ -89,6 +89,23 @@ namespace CloneExtensions.UnitTests
         }
 
         [TestMethod]
+        public void GetClone_ConstructorClass_ClonnedProperly()
+        {
+            var source = new ConstructorClass(null, 3, DateTime.Now, new List<string>(), null, default)
+            {
+                PropertyA = 3,
+                PropertyB = Guid.NewGuid().ToString(),
+                PropertyC = DateTime.Now
+            };
+
+            var target = CloneFactory.GetClone(source);
+
+            Assert.AreEqual(source.PropertyA, target.PropertyA);
+            Assert.AreEqual(source.PropertyB, target.PropertyB);
+            Assert.AreEqual(source.PropertyC, target.PropertyC);
+        }
+
+        [TestMethod]
         public void GetClone_DerivedTypeWithShadowedProperty_ClonnedProperly()
         {
             DerivedClassOne source = new DerivedClassOne()
@@ -225,6 +242,24 @@ namespace CloneExtensions.UnitTests
             public override int VirtualProperty { get; set; }
             // use the default implementation for VirtualProperty2
             public override string VirtualProperty3 { get; set; }
+        }
+
+        class ConstructorClass
+        {
+            public ConstructorClass(
+                BaseClassOne a, 
+                int? b, 
+                DateTime c,
+                List<string> d, 
+                IInterface e,
+                SimpleStruct f)
+            {
+
+            }
+
+            public int PropertyA { get; set; }
+            public string PropertyB { get; set; }
+            public DateTime PropertyC { get; set; }
         }
     }
 }
